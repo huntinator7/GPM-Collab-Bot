@@ -1,11 +1,12 @@
 import discord
 import asyncio
+import config as cfg
 from twitch import TwitchClient
 from gmusicapi import Mobileclient
 from discord.ext.commands import Bot
 
 api = Mobileclient()
-api.login('huntinator7@gmail.com',                                                                                                                                         'yqo95y32q65y3294oe3hew', Mobileclient.FROM_MAC_ADDRESS)
+api.login(cfg.hunter['username'], cfg.hunter['password'], Mobileclient.FROM_MAC_ADDRESS)
 bot = Bot(command_prefix="!")
 tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
 MUSICID = '306145575039008768'
@@ -119,4 +120,4 @@ async def on_message(message):
                         msg = 'Successfully added song!'
         await bot.send_message(message.channel, msg)
 
-bot.run("MzA2NDgzMzM0MzYyNTYyNTYw.DBIJEQ.A7jRc5ODaLNxqM1RUVUA3JwhkRY")
+bot.run(cfg.discord['key'])
