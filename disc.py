@@ -6,7 +6,8 @@ from gmusicapi import Mobileclient
 from discord.ext.commands import Bot
 
 api = Mobileclient()
-api.login(cfg.hunter['username'], cfg.hunter['password'], Mobileclient.FROM_MAC_ADDRESS)
+api.login(cfg.hunter['username'], cfg.hunter['password'],
+          Mobileclient.FROM_MAC_ADDRESS)
 bot = Bot(command_prefix="!")
 tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
 MUSICID = '306145575039008768'
@@ -15,7 +16,8 @@ STREAMSID = '337819803500806146'
 CHANNEL = ''
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 
-streamNums = {58460483: None, 23218163: None, 26832142: None, 26832258: None, 114241476: None, 125129097: None}
+streamNums = {58460483: None, 23218163: None, 26832142: None,
+              26832258: None, 114241476: None, 125129097: None}
 # splatterdodge: 58460483
 # thederko: 23218163
 # huntinator7: 26832142
@@ -24,7 +26,7 @@ streamNums = {58460483: None, 23218163: None, 26832142: None, 26832258: None, 11
 # mighty_moosen: 125129097
 
 
-#async def my_background_task():
+# async def my_background_task():
 #    await bot.wait_until_ready()
 #    counter = 0
 #    while not bot.is_closed:
@@ -32,10 +34,10 @@ streamNums = {58460483: None, 23218163: None, 26832142: None, 26832258: None, 11
 #        await check_start()
 #        await asyncio.sleep(600)  # task runs every 60 seconds
 
-#bot.loop.create_task(my_background_task())
+# bot.loop.create_task(my_background_task())
 
 
-#async def check_start():
+# async def check_start():
 #    for num in streamNums.keys():
 #        tf = tw_client.streams.get_stream_by_user(num)
 #        if streamNums[num] is None:
@@ -47,7 +49,7 @@ streamNums = {58460483: None, 23218163: None, 26832142: None, 26832258: None, 11
 #                streamNums[num] = tf
 
 
-#async def stream_alert(stream):
+# async def stream_alert(stream):
 #    msg = '@here Come watch ' + stream.channel.name + \
 #          ' stream ' + stream.channel.game + \
 #          ' over at ' + stream.channel.url
@@ -78,7 +80,8 @@ async def on_message(message):
         msg = "Here's the link to the playlist for listening " + GPMLINK
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!add'):
-        nid = message.content[message.content.find('/m/')+3:message.content.find('?t=')]
+        nid = message.content[message.content.find(
+            '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
         lists = api.get_all_playlists()
         for l in lists:
@@ -86,13 +89,14 @@ async def on_message(message):
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
-                    print(song)
-                    if song['nid'] == nid:
-                        api.add_songs_to_playlist(l['id'], song['id'])
-                        msg = 'Successfully added song!'
+                    if 'nid' in song:
+                        if song['nid'] == nid:
+                            api.add_songs_to_playlist(l['id'], song['id'])
+                            msg = 'Successfully added song!'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!ad'):
-        nid = message.content[message.content.find('/m/')+3:message.content.find('?t=')]
+        nid = message.content[message.content.find(
+            '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
         lists = api.get_all_playlists()
         for l in lists:
@@ -100,15 +104,17 @@ async def on_message(message):
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
-                    if song['nid'] == nid:
-                        api.add_songs_to_playlist(l['id'], song['id'])
-                        msg = 'Nick you suck at typing. I shouldn\'t have, but I added the song anyways.'
+                    if 'nid' in song:
+                        if song['nid'] == nid:
+                            api.add_songs_to_playlist(l['id'], song['id'])
+                            msg = 'Nick you suck at typing. I shouldn\'t have, but I added the song anyways.'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!com'):
         msg = '!link to get link to the playlist\n!add to add a song'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!test'):
-        nid = message.content[message.content.find('/m/')+3:message.content.find('?t=')]
+        nid = message.content[message.content.find(
+            '/m/') + 3:message.content.find('?t=')]
         msg = 'Song is not in playlist'
         lists = api.get_all_playlists()
         for l in lists:
