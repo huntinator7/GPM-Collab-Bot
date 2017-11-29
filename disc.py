@@ -86,6 +86,7 @@ async def on_message(message):
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
+                    print(song)
                     if song['nid'] == nid:
                         api.add_songs_to_playlist(l['id'], song['id'])
                         msg = 'Successfully added song!'
