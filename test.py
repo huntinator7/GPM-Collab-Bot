@@ -1,4 +1,5 @@
 from gmusicapi import Mobileclient
+import config as cfg
 
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
