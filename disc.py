@@ -123,7 +123,8 @@ async def on_message(message):
         msg = '!link to get link to the playlist\n!add to add a song'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!upload'):
-        url = message.content[8:]
+        msg = message.content[8:]
+        info = msg.split(" ")
         ydl_opts = {
             'forcejson': 'true',
             'format': 'bestaudio/best',
@@ -135,14 +136,16 @@ async def on_message(message):
             'progress_hooks': [my_hook]
         }
         with ytdl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            ydl.download([info[0]])
         await bot.send_message(message.channel, "Downloaded to server")
         tag.parse(songFilename)
-        tag.artist = "Testing"
+        tag.artist(info[1])
+        tag._setTitle(info[2])
+        tag._setArtist(info[1])
+        tag.album()
+        print("XXXXXXXXXXXXXXXXXXXXXXXXX TAG.ARTIST XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         print (tag.artist)
         mm.upload(songFilename)
-        print(songFilename)
-        # mm.upload('test2.mp3')
         await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
