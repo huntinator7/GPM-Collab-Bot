@@ -122,7 +122,6 @@ async def on_message(message):
         url = message.content[8:]
         ydl_opts = {
             'forcejson': 'true',
-            'outtmpl': 'test.mp3',
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -154,7 +153,7 @@ async def on_message(message):
 
 async def my_hook(d):
     if d['status'] == 'finished':
-        print(d['_filename'])
+        await print(d['_filename'])
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
