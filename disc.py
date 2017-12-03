@@ -121,7 +121,7 @@ async def on_message(message):
     elif message.content.startswith('!upload'):
         url = message.content[8:]
         ydl_opts = {
-            'o': 'test.mp4',
+            'output': 'test.mp4',
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -131,7 +131,7 @@ async def on_message(message):
         }
         with ytdl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        bot.send_message(message.channel, "Downloaded to server")
+        await bot.send_message(message.channel, "Downloaded to server")
         mm.upload('test.mp4')
         await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
