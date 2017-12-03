@@ -119,7 +119,7 @@ async def on_message(message):
         msg = '!link to get link to the playlist\n!add to add a song'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!upload'):
-        msg = message.content[9]
+        msg = message.content[8:]
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
