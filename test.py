@@ -1,5 +1,9 @@
-from eyed3 import id3
-tag = id3.Tag()
+from gmusicapi import Mobileclient
 
-tag.parse('test.mp3')
-print(tag.artist)
+api = Mobileclient()
+api.login(cfg.hunter['username'], cfg.hunter['password'],
+          Mobileclient.FROM_MAC_ADDRESS)
+
+library = api.get_all_songs()
+for song in library:
+    print(song)

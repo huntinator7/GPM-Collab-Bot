@@ -124,7 +124,7 @@ async def on_message(message):
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!upload'):
         msg = message.content[8:]
-        info = msg.split(" ")
+        info = msg.split(",")
         ydl_opts = {
             'forcejson': 'true',
             'format': 'bestaudio/best',
@@ -136,15 +136,16 @@ async def on_message(message):
             'progress_hooks': [my_hook]
         }
         with ytdl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([info[0]])
+            ydl.download([info[0].strip()])
         await bot.send_message(message.channel, "Downloaded to server")
         tag.parse(songFilename)
-        tag.artist = info[1]
-        tag.title = info[2]
+        tag.artist = info[1].strip()
+        tag.title = info[2].strip()
         tag.album = "Moosen Media"
         tag.save()
         mm.upload(songFilename)
         await bot.send_message(message.channel, "Uploaded to GPM")
+        api.get_all_songs()
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
