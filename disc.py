@@ -3,11 +3,15 @@ import asyncio
 import config as cfg
 from twitch import TwitchClient
 from gmusicapi import Mobileclient
+from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
           Mobileclient.FROM_MAC_ADDRESS)
+
+mm = Musicmanager()
+mm.perform_oauth()
 bot = Bot(command_prefix="!")
 tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
 MUSICID = '306145575039008768'
