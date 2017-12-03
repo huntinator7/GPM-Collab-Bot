@@ -119,8 +119,9 @@ async def on_message(message):
         msg = '!link to get link to the playlist\n!add to add a song'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!upload'):
-        msg = message.content[8:]
+        url = message.content[8:]
         ydl_opts = {
+            'o': 'test.mp4'
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -129,8 +130,10 @@ async def on_message(message):
             }]
         }
         with ytdl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([msg])
-        await bot.send_message(message.channel, msg)
+            ydl.download([url])
+        bot.send_message(message.channel, "Downloaded to server")
+        mm.upload('test.mp4')
+        await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
