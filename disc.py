@@ -3,6 +3,7 @@ import discord
 import asyncio
 import config as cfg
 import youtube_dl as ytdl
+import eyeD3
 from twitch import TwitchClient
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
@@ -16,6 +17,7 @@ mm = Musicmanager()
 mm.login()
 bot = Bot(command_prefix="!")
 tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
+tag = eyeD3.Tag()
 MUSICID = '306145575039008768'
 DEVID = '319938734135050240'
 STREAMSID = '337819803500806146'
@@ -135,7 +137,9 @@ async def on_message(message):
         with ytdl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         await bot.send_message(message.channel, "Downloaded to server")
-        print(songFilename)
+        tag.link(songFilename)
+        tag.setArtist("Testing")
+        print (tag.getArtist())
         mm.upload(songFilename)
         print(songFilename)
         # mm.upload('test2.mp3')
