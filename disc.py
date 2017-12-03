@@ -120,6 +120,16 @@ async def on_message(message):
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!upload'):
         msg = message.content[8:]
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }]
+        }
+        with ytdl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([msg])
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
