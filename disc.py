@@ -1,6 +1,8 @@
 import discord
 import asyncio
 import config as cfg
+from __future__ import unicode_literals
+import youtube_dl as ytdl
 from twitch import TwitchClient
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
@@ -11,7 +13,7 @@ api.login(cfg.hunter['username'], cfg.hunter['password'],
           Mobileclient.FROM_MAC_ADDRESS)
 
 mm = Musicmanager()
-mm.perform_oauth()
+mm.login()
 bot = Bot(command_prefix="!")
 tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
 MUSICID = '306145575039008768'
@@ -115,6 +117,9 @@ async def on_message(message):
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!com'):
         msg = '!link to get link to the playlist\n!add to add a song'
+        await bot.send_message(message.channel, msg)
+    elif message.content.startswith('!upload'):
+        msg = message.content[9]
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
