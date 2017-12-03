@@ -122,20 +122,21 @@ async def on_message(message):
         url = message.content[8:]
         ydl_opts = {
             'forcejson': 'true',
-            'outtmpl': 'test2',
+            'outtmpl': 'test.mp3',
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
-            }]
+            }],
+            'progress_hooks': [my_hook]
         }
         with ytdl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         await bot.send_message(message.channel, "Downloaded to server")
-        mm.upload('test.mp3')
-        mm.upload('test2.mp3')
-        await bot.send_message(message.channel, "Uploaded to GPM")
+        # mm.upload('test.mp3')
+        # mm.upload('test2.mp3')
+        # await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
@@ -150,5 +151,10 @@ async def on_message(message):
                         api.add_songs_to_playlist(l['id'], song['id'])
                         msg = 'Successfully added song!'
         await bot.send_message(message.channel, msg)
+
+async def my_hook(d):
+    if d['status'] == 'finished':
+        print(d['_filename'])
+        # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
