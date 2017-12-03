@@ -158,6 +158,7 @@ async def on_message(message):
 
 def my_hook(d):
     if d['status'] == 'finished':
+        global songFilename
         songFilename = d['filename'][:-4]
         songFilename += "mp3"
         print(songFilename)
