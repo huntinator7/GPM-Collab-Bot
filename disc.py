@@ -122,8 +122,9 @@ async def on_message(message):
         url = message.content[8:]
         ydl_opts = {
             'title': 'test.mp4',
-            'file': 'test2.mp4',
+            'forcetitle': 'test2.mp4',
             'filename': 'test3.mp4',
+            '-o': 'test4.mp4',
             '-o': 'test4.mp4',
             'format': 'bestaudio/best',
             'postprocessors': [{
