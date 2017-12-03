@@ -156,7 +156,7 @@ async def on_message(message):
 
 def my_hook(d):
     if d['status'] == 'finished':
-        songFilename = d['filename'][:-4]
+        global songFilename = d['filename'][:-4]
         songFilename += "mp3"
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
