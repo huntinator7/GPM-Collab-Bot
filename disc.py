@@ -122,7 +122,7 @@ async def on_message(message):
         url = message.content[8:]
         ydl_opts = {
             'forcejson': 'true',
-            'outtmpl': 'test.mp3',
+            'outtmpl': 'test2',
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -134,6 +134,7 @@ async def on_message(message):
             ydl.download([url])
         await bot.send_message(message.channel, "Downloaded to server")
         mm.upload('test.mp3')
+        mm.upload('test2.mp3')
         await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
