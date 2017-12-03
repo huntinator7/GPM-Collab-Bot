@@ -139,12 +139,10 @@ async def on_message(message):
             ydl.download([info[0]])
         await bot.send_message(message.channel, "Downloaded to server")
         tag.parse(songFilename)
-        tag.artist(info[1])
-        tag._setTitle(info[2])
-        tag._setArtist(info[1])
-        tag.album()
-        print("XXXXXXXXXXXXXXXXXXXXXXXXX TAG.ARTIST XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-        print (tag.artist)
+        tag.artist = info[1]
+        tag.title = info[2]
+        tag.album = "Moosen Media"
+        tag.save()
         mm.upload(songFilename)
         await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
