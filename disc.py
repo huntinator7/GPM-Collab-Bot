@@ -153,7 +153,7 @@ async def on_message(message):
 
 def my_hook(d):
     if d['status'] == 'finished':
-        print(d['_filename'])
+        print(d)
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
