@@ -151,9 +151,9 @@ async def on_message(message):
                         msg = 'Successfully added song!'
         await bot.send_message(message.channel, msg)
 
-async def my_hook(d):
+def my_hook(d):
     if d['status'] == 'finished':
-        await print(d['_filename'])
+        print(d['_filename'])
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
