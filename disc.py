@@ -1,7 +1,7 @@
+from __future__ import unicode_literals
 import discord
 import asyncio
 import config as cfg
-from __future__ import unicode_literals
 import youtube_dl as ytdl
 from twitch import TwitchClient
 from gmusicapi import Mobileclient
