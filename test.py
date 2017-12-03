@@ -7,4 +7,4 @@ api.login(cfg.hunter['username'], cfg.hunter['password'],
 
 library = api.get_all_songs()
 for song in library:
-    print(song)
+    print(song['title'] + ' - ' + song['artist'])
