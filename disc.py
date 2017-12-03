@@ -135,7 +135,9 @@ async def on_message(message):
         with ytdl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         await bot.send_message(message.channel, "Downloaded to server")
+        print(songFilename)
         mm.upload(songFilename)
+        print(songFilename)
         # mm.upload('test2.mp3')
         await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
@@ -158,6 +160,7 @@ def my_hook(d):
     if d['status'] == 'finished':
         global songFilename = d['filename'][:-4]
         songFilename += "mp3"
+        print(songFilename)
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
