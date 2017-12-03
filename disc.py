@@ -121,11 +121,8 @@ async def on_message(message):
     elif message.content.startswith('!upload'):
         url = message.content[8:]
         ydl_opts = {
-            'title': 'test.mp4',
             'forcejson': 'true',
-            'filename': 'test3.mp4',
-            '-o': 'test4.mp4',
-            '-o': 'test4.mp4',
+            '_filename': 'test.mp4',
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
