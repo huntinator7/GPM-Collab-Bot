@@ -22,6 +22,8 @@ STREAMSID = '337819803500806146'
 CHANNEL = ''
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 
+songFilename = ''
+
 streamNums = {58460483: None, 23218163: None, 26832142: None,
               26832258: None, 114241476: None, 125129097: None}
 # splatterdodge: 58460483
@@ -133,9 +135,9 @@ async def on_message(message):
         with ytdl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         await bot.send_message(message.channel, "Downloaded to server")
-        # mm.upload('test.mp3')
+        mm.upload(songFilename)
         # mm.upload('test2.mp3')
-        # await bot.send_message(message.channel, "Uploaded to GPM")
+        await bot.send_message(message.channel, "Uploaded to GPM")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
@@ -151,9 +153,11 @@ async def on_message(message):
                         msg = 'Successfully added song!'
         await bot.send_message(message.channel, msg)
 
+
 def my_hook(d):
     if d['status'] == 'finished':
-        print(d)
+        songFilename = d['filename'][:-4]
+        songFilename += "mp3"
         # await bot.send_message(message.channel, "Uploaded to GPM")
 
 bot.run(cfg.discord['key'])
