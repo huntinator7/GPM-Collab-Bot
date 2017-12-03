@@ -145,7 +145,15 @@ async def on_message(message):
         tag.save()
         mm.upload(songFilename)
         await bot.send_message(message.channel, "Uploaded to GPM")
-        api.get_all_songs()
+        lists = api.get_all_playlists()
+        for l in lists:
+            if l['name'] == 'Moosen Mix':
+                library = api.get_all_songs()
+                for song in library:
+                    if 'nid' in song:
+                        if song['nid'] == nid:
+                            api.add_songs_to_playlist(l['id'], song['id'])
+                            msg = 'Successfully added song!'
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
