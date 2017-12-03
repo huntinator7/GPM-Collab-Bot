@@ -150,10 +150,9 @@ async def on_message(message):
             if l['name'] == 'Moosen Mix':
                 library = api.get_all_songs()
                 for song in library:
-                    if 'nid' in song:
-                        if song['nid'] == nid:
+                    if song['title'] == info[2].strip() and song['artist'] == info[1].strip():
                             api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Successfully added song!'
+                            await bot.send_message(message.channel, "Added song to Moosen Mix")
     elif message.content.startswith('!test'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
