@@ -23,6 +23,7 @@ DEVID = '319938734135050240'
 STREAMSID = '337819803500806146'
 CHANNEL = ''
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
+XMASLINK = 'https://play.google.com/music/playlist/AMaBXymsmPFEwZCU-jkFiTXHw5jnIyL1M4DcaQ-rmmEnZg_DsmjtivO_WcP4xJk5-9OiekNY8nQjYNNqm8Lc4H5rPXJVQbWW-g%3D%3D'
 
 songFilename = ''
 
@@ -87,7 +88,7 @@ async def on_message(message):
             if channel.name == 'dev-test':
                 await bot.send_message(channel, msg)
     elif message.content.startswith('!link'):
-        msg = "Here's the link to the playlist for listening " + GPMLINK
+        msg = 'Moosen Mix: ' + GPMLINK + '\nChristmix: ' + XMASLINK
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!add'):
         nid = message.content[message.content.find(
@@ -102,7 +103,22 @@ async def on_message(message):
                     if 'nid' in song:
                         if song['nid'] == nid:
                             api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Successfully added song!'
+                            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
+        await bot.send_message(message.channel, msg)
+    elif message.content.startswith('!xmas'):
+        nid = message.content[message.content.find(
+            '/m/') + 3:message.content.find('?t=')]
+        msg = 'Could not add song'
+        lists = api.get_all_playlists()
+        for l in lists:
+            if l['name'] == 'Christmix':
+                api.add_store_tracks(nid)
+                library = api.get_all_songs()
+                for song in library:
+                    if 'nid' in song:
+                        if song['nid'] == nid:
+                            api.add_songs_to_playlist(l['id'], song['id'])
+                            msg = 'Successfully added song to Christmix! ' + XMASLINK
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!ad'):
         nid = message.content[message.content.find(
