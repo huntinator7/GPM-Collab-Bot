@@ -59,16 +59,18 @@ async def on_message(message):
             '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
         allPlaylists = api.get_all_user_playlist_contents()
-        for song in allPlaylists:
-            print(song)
+        # for song in allPlaylists:
+        #     print(song)
         lists = api.get_all_playlists()
         for l in lists:
             if l['name'] == 'Moosen Mix':
+                print(l)
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
                     if 'nid' in song:
                         if song['nid'] == nid:
+                            print(song)
                             api.add_songs_to_playlist(l['id'], song['id'])
                             msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
         await bot.send_message(message.channel, msg)
