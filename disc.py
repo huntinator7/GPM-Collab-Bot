@@ -15,7 +15,6 @@ api.login(cfg.hunter['username'], cfg.hunter['password'],
 mm = Musicmanager()
 mm.login()
 bot = Bot(command_prefix="!")
-tw_client = TwitchClient(client_id='yrtnfgu5t6f1wxdrzszwh1h0awn9iy')
 tag = id3.Tag()
 MUSICID = '306145575039008768'
 DEVID = '319938734135050240'
@@ -26,8 +25,8 @@ XMASLINK = 'https://play.google.com/music/playlist/AMaBXymsmPFEwZCU-jkFiTXHw5jnI
 
 songFilename = ''
 
-streamNums = {58460483: None, 23218163: None, 26832142: None,
-              26832258: None, 114241476: None, 125129097: None}
+# streamNums = {58460483: None, 23218163: None, 26832142: None,
+#               26832258: None, 114241476: None, 125129097: None}
 # splatterdodge: 58460483
 # thederko: 23218163
 # huntinator7: 26832142
