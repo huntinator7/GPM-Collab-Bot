@@ -4,7 +4,6 @@ import asyncio
 import config as cfg
 import youtube_dl as ytdl
 from eyed3 import id3
-from twitch import TwitchClient
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
@@ -36,40 +35,6 @@ streamNums = {58460483: None, 23218163: None, 26832142: None,
 # ztagger1911: 114241476
 # mighty_moosen: 125129097
 
-
-# async def my_background_task():
-#    await bot.wait_until_ready()
-#    counter = 0
-#    while not bot.is_closed:
-#        counter += 1
-#        await check_start()
-#        await asyncio.sleep(600)  # task runs every 60 seconds
-
-# bot.loop.create_task(my_background_task())
-
-
-# async def check_start():
-#    for num in streamNums.keys():
-#        tf = tw_client.streams.get_stream_by_user(num)
-#        if streamNums[num] is None:
-#            if tf is not None:
-#                streamNums[num] = tf
-#                await stream_alert(tf)
-#        else:
-#            if tf is None:
-#                streamNums[num] = tf
-
-
-# async def stream_alert(stream):
-#    msg = '@here Come watch ' + stream.channel.name + \
-#          ' stream ' + stream.channel.game + \
-#          ' over at ' + stream.channel.url
-#    channels = bot.get_all_channels()
-#    for channel in channels:
-#        if channel.name == 'streams':
-#            await bot.send_message(channel, msg)
-
-
 @bot.event
 async def on_read():
     print('Client logged in')
@@ -97,6 +62,8 @@ async def on_message(message):
         lists = api.get_all_playlists()
         for l in lists:
             if l['name'] == 'Moosen Mix':
+                for song in l:
+                    print(song)
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
