@@ -58,11 +58,12 @@ async def on_message(message):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
+        allPlaylists = api.get_all_user_playlist_contents()
+        for song in allPlaylists:
+            print(song)
         lists = api.get_all_playlists()
         for l in lists:
             if l['name'] == 'Moosen Mix':
-                print(l)
-                print(l.get_all_songs())
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
