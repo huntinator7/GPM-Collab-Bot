@@ -61,8 +61,8 @@ async def on_message(message):
         lists = api.get_all_playlists()
         for l in lists:
             if l['name'] == 'Moosen Mix':
-                for song in l:
-                    print(song)
+                print(l)
+                print(l.get_all_songs())
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
                 for song in library:
