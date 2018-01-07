@@ -65,7 +65,8 @@ async def on_message(message):
                 print(l)
                 api.add_store_tracks(nid)
                 allsongs = api.get_all_user_playlist_contents()
-                for song in allsongs['tracks']:
+                alltracks = allsongs['tracks']
+                for song in alltracks:
                     if song['track']['nid'] == nid and song['playlistId'] == "08d08171-1818-48a4-b587-d324090922e8":
                         msg = "That song is already on the playlist"
                         await bot.send_message(message.channel, msg)
