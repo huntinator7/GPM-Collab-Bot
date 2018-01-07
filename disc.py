@@ -64,12 +64,14 @@ async def on_message(message):
             if l['name'] == 'Moosen Mix':
                 print(l)
                 api.add_store_tracks(nid)
-                allsongs = api.get_all_user_playlist_contents()
-                alltracks = allsongs['tracks']
-                # for song in alltracks:
-                #     if song['track']['nid'] == nid and song['playlistId'] == "08d08171-1818-48a4-b587-d324090922e8":
-                #         msg = "That song is already on the playlist"
-                #         await bot.send_message(message.channel, msg)
+                allLists = api.get_all_user_playlist_contents()
+                for playlist in allLists:
+                    if playlist['name'] == 'Moosen Mix':
+                        for song in playlist['tracks']:
+                            if 'nid' in song['track']:
+                                if song['track']['nid'] == nid:
+                                msg = "That song is already on the playlist"
+                                await bot.send_message(message.channel, msg)
                 library = api.get_all_songs()
                 for song in library:
                     if 'nid' in song:
