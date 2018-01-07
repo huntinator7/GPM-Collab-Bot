@@ -73,6 +73,7 @@ async def on_message(message):
                 for song in allsongs:
                     testfile.write(str(song))
                     print(str(song))
+                testfile.close()
                 for song in library:
                     if 'nid' in song:
                         if song['nid'] == nid:
