@@ -58,28 +58,25 @@ async def on_message(message):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
-        # allPlaylists = api.get_all_user_playlist_contents()
-        # for song in allPlaylists:
-        #     print(song)
         lists = api.get_all_playlists()
         for l in lists:
+            print(l)
             if l['name'] == 'Moosen Mix':
                 print(l)
                 api.add_store_tracks(nid)
-                library = api.get_all_songs()
                 allsongs = api.get_all_user_playlist_contents()
-                filename = "hello.txt"
-                testfile = open(filename, "w")
                 for song in allsongs:
-                    testfile.write(str(song))
-                    print(str(song))
-                testfile.close()
+                    if 'nid' in song['track']:
+                        if song['track']['nid'] == nid and song['playlistId'] == "08d08171-1818-48a4-b587-d324090922e8":
+                            msg = "That song is already on the playlist"
+                            await bot.send_message(message.channel, msg)
+                library = api.get_all_songs()
                 for song in library:
                     if 'nid' in song:
                         if song['nid'] == nid:
                             print(song)
                             api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
+                            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK    
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!xmas'):
         nid = message.content[message.content.find(
