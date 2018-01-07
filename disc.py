@@ -54,7 +54,7 @@ async def on_message(message):
     elif message.content.startswith('!link'):
         msg = 'Moosen Mix: ' + GPMLINK + '\nChristmix: ' + XMASLINK
         await bot.send_message(message.channel, msg)
-    elif message.content.startswith('!add'):
+    elif message.content.startswith('!add') or message.content.startswith('!ad'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
@@ -67,6 +67,11 @@ async def on_message(message):
                 print(l)
                 api.add_store_tracks(nid)
                 library = api.get_all_songs()
+                allsongs = api.get_all_user_playlist_contents()
+                filename = "hello.txt"
+                testfile = open(filename, "w")
+                for song in allsongs:
+                    testfile.write(str(song))
                 for song in library:
                     if 'nid' in song:
                         if song['nid'] == nid:
@@ -88,21 +93,6 @@ async def on_message(message):
                         if song['nid'] == nid:
                             api.add_songs_to_playlist(l['id'], song['id'])
                             msg = 'Successfully added song to Christmix! ' + XMASLINK
-        await bot.send_message(message.channel, msg)
-    elif message.content.startswith('!ad'):
-        nid = message.content[message.content.find(
-            '/m/') + 3:message.content.find('?t=')]
-        msg = 'Could not add song'
-        lists = api.get_all_playlists()
-        for l in lists:
-            if l['name'] == 'Moosen Mix':
-                api.add_store_tracks(nid)
-                library = api.get_all_songs()
-                for song in library:
-                    if 'nid' in song:
-                        if song['nid'] == nid:
-                            api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Nick you suck at typing. I shouldn\'t have, but I added the song anyways.'
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!com'):
         msg = '!link to get link to the playlist\n!add to add a song'
