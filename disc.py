@@ -68,10 +68,12 @@ async def on_message(message):
                 for playlist in allLists:
                     if playlist['name'] == 'Moosen Mix':
                         for song in playlist['tracks']:
-                            if 'nid' in song['track']:
-                                if song['track']['nid'] == nid:
-                                    msg = "That song is already on the playlist"
-                                    await bot.send_message(message.channel, msg)
+                            print(song)
+                            print('========')
+                            # if 'nid' in song['track']:
+                            #     if song['track']['nid'] == nid:
+                            #         msg = "That song is already on the playlist"
+                            #         await bot.send_message(message.channel, msg)
                 library = api.get_all_songs()
                 for song in library:
                     if 'nid' in song:
