@@ -2,8 +2,7 @@ from __future__ import unicode_literals
 import discord
 import asyncio
 import config as cfg
-import youtube_dl as ytdl
-from eyed3 import id3
+import json
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
@@ -11,22 +10,18 @@ from discord.ext.commands import Bot
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
           Mobileclient.FROM_MAC_ADDRESS)
-
 mm = Musicmanager()
 mm.login()
 bot = Bot(command_prefix="!")
-tag = id3.Tag()
 MUSICID = '306145575039008768'
-DEVID = '319938734135050240'
-STREAMSID = '337819803500806146'
-CHANNEL = ''
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
-XMASLINK = 'https://play.google.com/music/playlist/AMaBXymsmPFEwZCU-jkFiTXHw5jnIyL1M4DcaQ-rmmEnZg_DsmjtivO_WcP4xJk5-9OiekNY8nQjYNNqm8Lc4H5rPXJVQbWW-g%3D%3D'
+BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw23ixBIZZ-ocHszlJRgcwZXv8Djcvvz_I6PtHs3e5xm8ZMNHdf00VQQ4wPPA%3D%3D'
 
 songFilename = ''
 
-# streamNums = {58460483: None, 23218163: None, 26832142: None,
-#               26832258: None, 114241476: None, 125129097: None}
+TOTAL_USERS = 4
+PERCENT_NECESSARY = 0.74
+
 # splatterdodge: 58460483
 # thederko: 23218163
 # huntinator7: 26832142
@@ -34,125 +29,110 @@ songFilename = ''
 # ztagger1911: 114241476
 # mighty_moosen: 125129097
 
+
 @bot.event
-async def on_read():
-    print('Client logged in')
+async def on_ready():
+    print('bot logged in')
 
 
 @bot.event
 async def on_message(message):
-    # we do not want the bot to reply to itself
-    # if message.channel.id == MUSICID
+
     if message.author == bot.user:
         return
 
     if message.content.startswith('!hello'):
         msg = 'Hello ' + message.server.id
-        for channel in message.server.channels:
-            if channel.name == 'dev-test':
-                await bot.send_message(channel, msg)
     elif message.content.startswith('!link'):
-        msg = 'Moosen Mix: ' + GPMLINK + '\nChristmix: ' + XMASLINK
+        msg = 'Moosen Mix: ' + GPMLINK
         await bot.send_message(message.channel, msg)
     elif message.content.startswith('!add') or message.content.startswith('!ad'):
         nid = message.content[message.content.find(
             '/m/') + 3:message.content.find('?t=')]
         msg = 'Could not add song'
         lists = api.get_all_playlists()
-        for l in lists:
-            print(l)
+        for l in lists:	
             if l['name'] == 'Moosen Mix':
-                print(l)
                 api.add_store_tracks(nid)
-                allLists = api.get_all_user_playlist_contents()
-                for playlist in allLists:
-                    if playlist['name'] == 'Moosen Mix':
-                        for song in playlist['tracks']:
-                            print(song)
-                            print('========')
-                            # if 'nid' in song['track']:
-                            #     if song['track']['nid'] == nid:
-                            #         msg = "That song is already on the playlist"
-                            #         await bot.send_message(message.channel, msg)
                 library = api.get_all_songs()
                 for song in library:
                     if 'nid' in song:
                         if song['nid'] == nid:
                             print(song)
                             api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK    
+                            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
         await bot.send_message(message.channel, msg)
-    elif message.content.startswith('!xmas'):
-        nid = message.content[message.content.find(
-            '/m/') + 3:message.content.find('?t=')]
-        msg = 'Could not add song'
-        lists = api.get_all_playlists()
-        for l in lists:
-            if l['name'] == 'Christmix':
-                api.add_store_tracks(nid)
-                library = api.get_all_songs()
-                for song in library:
-                    if 'nid' in song:
-                        if song['nid'] == nid:
-                            api.add_songs_to_playlist(l['id'], song['id'])
-                            msg = 'Successfully added song to Christmix! ' + XMASLINK
-        await bot.send_message(message.channel, msg)
-    elif message.content.startswith('!com'):
-        msg = '!link to get link to the playlist\n!add to add a song'
-        await bot.send_message(message.channel, msg)
-    elif message.content.startswith('!upload'):
-        msg = message.content[8:]
-        info = msg.split(",")
-        ydl_opts = {
-            'forcejson': 'true',
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'progress_hooks': [my_hook]
-        }
-        with ytdl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([info[0].strip()])
-        await bot.send_message(message.channel, "Downloaded to server")
-        tag.parse(songFilename)
-        tag.artist = info[1].strip()
-        tag.title = info[2].strip()
-        tag.album = "Moosen Media"
-        tag.save()
-        mm.upload(songFilename)
-        await bot.send_message(message.channel, "Uploaded to GPM")
-        lists = api.get_all_playlists()
-        for l in lists:
-            if l['name'] == 'Moosen Mix':
-                library = api.get_all_songs()
-                for song in library:
-                    if song['title'] == info[2].strip() and song['artist'] == info[1].strip():
-                            api.add_songs_to_playlist(l['id'], song['id'])
-                            await bot.send_message(message.channel, "Added song to Moosen Mix")
-    elif message.content.startswith('!test'):
-        nid = message.content[message.content.find(
-            '/m/') + 3:message.content.find('?t=')]
-        msg = 'Song is not in playlist'
-        lists = api.get_all_playlists()
-        for l in lists:
-            if l['name'] == 'Moosen Mix':
-                api.add_store_tracks(nid)
-                library = api.get_all_songs()
-                for song in library:
-                    if song['nid'] == nid:
-                        api.add_songs_to_playlist(l['id'], song['id'])
-                        msg = 'Successfully added song!'
-        await bot.send_message(message.channel, msg)
+    elif message.content.startswith('<:banger:462298646117875734>'):
+        link = message.content[29:]
 
+        songID = 'ERROR'
+        listID = 'ERROR'
+        songName = 'ERROR'
+        nid = link[link.find(
+            '/m/') + 3:link.find('?t=')]
+        if nid.isalnum() and len(nid) == 27:
+            lists = api.get_all_playlists()
+            for l in lists:
+                if l['name'] == 'Bangers':
+                    listID = l['id']
+                    api.add_store_tracks(nid)
+                    library = api.get_all_songs()
+                    for song in library:
+                        if 'nid' in song:
+                            if song['nid'] == nid:
+                                print(song)
+                                songName = '{0} - {1}'.format(song['title'], song['artist'])
+                                songID = song['id']
 
-def my_hook(d):
-    if d['status'] == 'finished':
-        global songFilename
-        songFilename = d['filename'][:-4]
-        songFilename += "mp3"
-        print(songFilename)
-        # await bot.send_message(message.channel, "Uploaded to GPM")
+        if songName == 'ERROR':
+            await bot.send_message(message.channel, '{0} was not recognized as a proper link to a song'.format(link))
+            return
+        else:
+            with open('bangers.json', 'r') as f:
+                data = json.load(f)
+            found = list(filter(lambda x: x['nid'] == nid, data['songs']))
+            if len(found) > 0:
+                msg = '{0} has already been added by {1}'.format(songName, found[0]['user'])
+                await bot.send_message(message.channel, msg)
+                return
+
+        msg = await bot.send_message(message.channel, '{0} has voted to add {1} to the Bangers playlist'.format(message.author.nick, songName))
+
+        numUsersReacted = 0
+        usersReacted = dict()
+
+        def check(reaction, user):
+            e = str(reaction.emoji)
+            if not user.id in usersReacted:
+                voteStatus = True if e.startswith(
+                    '<:upvote:464532537243467786>') else False
+                usersReacted[user.id] = voteStatus
+                return e.startswith(('<:upvote:464532537243467786>', '<:downvote:464532598643752970>'))
+
+        while len(usersReacted) < TOTAL_USERS:
+            res = await bot.wait_for_reaction(message=msg, check=check)
+            numUsersReacted += 1
+            recMsg = 'agrees <:upvote:464532537243467786>' if (str(
+                res.reaction.emoji) == '<:upvote:464532537243467786>') else 'disagrees {0}'.format(res.reaction.emoji)
+            await bot.send_message(message.channel, '{0.user} {1} for {2}'.format(res, recMsg, songName))
+
+        agreeVotesCounter = 0
+
+        for voteStatus in usersReacted:
+            if voteStatus:
+                agreeVotesCounter += 1
+
+        if agreeVotesCounter / TOTAL_USERS > PERCENT_NECESSARY:
+            with open('bangers.json') as f:
+                data = json.load(f)
+            with open('bangers.json.backup', 'a') as f:
+                f.write(json.dumps(data))
+            found = list(filter(lambda x: x['nid'] == nid, data['songs']))
+            data['songs'].append({'nid': nid, 'user': message.author.name})
+            with open('bangers.json', 'w') as f:
+                f.write(json.dumps(data))
+            msg = '{0} has been approved. Adding to bangers {1}'.format(songName, BANGERSLINK)
+            api.add_songs_to_playlist(listID, songID)
+            await bot.send_message(message.channel, msg)
 
 bot.run(cfg.discord['key'])
