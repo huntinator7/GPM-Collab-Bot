@@ -109,7 +109,7 @@ async def on_message(message):
 
             def check(reaction, user):
                 if(user.id == message.author.id):
-                    await bot.remove_reaction(message, reaction.emoji, message.author)
+                    bot.remove_reaction(message, reaction.emoji, message.author)
                     return
                 e = str(reaction.emoji)
                 if not user.id in usersReacted:
