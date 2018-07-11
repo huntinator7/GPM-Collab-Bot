@@ -143,8 +143,8 @@ async def on_message(message):
         else:
             await removeMsg(1.0, message)
 
-async def removeMsg(sec, msg):
-    await asyncio.sleep(sec)
-    bot.delete_message(msg)
+async def removeMsg(sec, msgToRemove):
+    await sleep(sec)
+    bot.delete_message(msgToRemove)
 
 bot.run(cfg.discord['key'])
