@@ -39,8 +39,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    print(message.channel.id)
-
+    
     if message.author == bot.user:
             return
     if message.channel.id != BANGERSID and message.content.startswith('!add') or message.content.startswith('!ad'):    
@@ -61,9 +60,11 @@ async def on_message(message):
         await bot.send_message(message.channel, msg)
     elif message.channel.id == BANGERSID:
         if message.content.startswith('<:banger:462298646117875734>'):
-            link = re.match('http\S+', message.content[29:]).group(0)
+            link = re.match('http\S+', message.content[29:])
             if not link:
                 link = 'ERROR'
+            else:
+                link = link.group(0)
             songID = 'ERROR'
             listID = 'ERROR'
             songName = 'ERROR'
