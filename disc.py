@@ -3,6 +3,7 @@ import discord
 import asyncio
 import config as cfg
 import json
+import re
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
@@ -12,7 +13,7 @@ api = Mobileclient()
 #           Mobileclient.FROM_MAC_ADDRESS)
 mm = Musicmanager()
 # mm.login()
-bot = Bot(command_prefix="!")
+bot = Bot(command_prefix='!')
 MUSICID = '306145575039008768'
 BANGERSID = '464450150027493377'
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
@@ -59,8 +60,9 @@ async def on_message(message):
         await bot.send_message(message.channel, msg)
     elif message.channel.id == BANGERSID:
         if message.content.startswith('<:banger:462298646117875734>'):
-            link = message.content[29:]
-
+            link = re.match('http\S+', message.content[29:]).group(0)
+            if not link:
+                link = 'ERROR'
             songID = 'ERROR'
             listID = 'ERROR'
             songName = 'ERROR'
@@ -93,16 +95,22 @@ async def on_message(message):
                 if len(found) > 0:
                     msg = '{0} has already been added by {1}'.format(
                         songName, found[0]['user'])
-                    await bot.send_message(message.channel, msg)
+                    alreadyAdded = await bot.send_message(message.channel, msg)
+                    await removeMsg(10.0, alreadyAdded)
+                    await removeMsg(1.0, message)
                     return
             numUsersReacted = 0
             usersReacted = dict()
 
-            voting = await bot.send_message(message.channel, '[VOTE] {0} has voted to add {1} to the Bangers playlist'.format(message.author.nick, songName))
-            await bot.add_reaction(voting, '<:upvote:464532537243467786>')
+            voting = await bot.send_message(message.channel, '[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(message.author.nick, songName, link))
+            await removeMsg(1.0, message)
+            await bot.add_reaction(voting, ':upvote:')
             usersReacted[message.author.id] = True
 
             def check(reaction, user):
+                if(user.id == message.author.id):
+                    await bot.remove_reaction(message, reaction.emoji, message.author)
+                    return
                 e = str(reaction.emoji)
                 if not user.id in usersReacted:
                     voteStatus = True if e.startswith(
@@ -139,14 +147,16 @@ async def on_message(message):
                 api.add_songs_to_playlist(listID, songID)
                 approval = await bot.send_message(message.channel, msg)
                 await removeMsg(1.0, voting)
-                await removeMsg(600.0, approval)
+                await removeMsg(120.0, approval)
+            else:
+                approval = await bot.send_message(message.channel, 'Sorry, {0} did not receive enough upvotes'.format(songName))
+                await removeMsg(1.0, voting)
+                await removeMsg(120.0, approval)
         else:
             await removeMsg(1.0, message)
 
 async def removeMsg(sec, msgToRemove):
-    print("IM HERE")
     await asyncio.sleep(sec)
-    print("Still here")
     await bot.delete_message(msgToRemove)
 
 bot.run(cfg.discord['key'])
