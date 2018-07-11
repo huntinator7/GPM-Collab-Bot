@@ -82,8 +82,9 @@ async def on_message(message):
                                     songID = song['id']
 
             if songName == 'ERROR':
-                await bot.delete_message(message)
-                await bot.send_message(message.channel, '{0} was not recognized as a proper link to a song'.format(link))
+                await removeMsg(1.0, message)
+                removed = await bot.send_message(message.channel, '{0} was not recognized as a proper link to a song'.format(link))
+                await removeMsg(10.0, removed)
                 return
             else:
                 with open('bangers.json', 'r') as f:
@@ -137,10 +138,10 @@ async def on_message(message):
                     songName, BANGERSLINK)
                 api.add_songs_to_playlist(listID, songID)
                 approval = await bot.send_message(message.channel, msg)
-                await bot.delete_message(voting)
+                await removeMsg(1.0, voting)
                 await removeMsg(600.0, approval)
         else:
-            await bot.delete_message(message)
+            await removeMsg(1.0, message)
 
 async def removeMsg(sec, msg):
     await asyncio.sleep(sec)
