@@ -15,7 +15,7 @@ mm = Musicmanager()
 mm.login()
 bot = Bot(command_prefix='!')
 MUSICID = '306145575039008768'
-BANGERSID = '464450150027493377'
+BANGERSID = '466453653084176384'
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw23ixBIZZ-ocHszlJRgcwZXv8Djcvvz_I6PtHs3e5xm8ZMNHdf00VQQ4wPPA%3D%3D'
 
@@ -39,6 +39,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+    print(message.channel.id)
 
     if message.author == bot.user:
             return
@@ -104,11 +105,15 @@ async def on_message(message):
 
             voting = await bot.send_message(message.channel, '[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(message.author.nick, songName, link))
             await removeMsg(1.0, message)
-            await bot.add_reaction(voting, ':upvote:')
+            await bot.add_reaction(voting, 'upvote:464532537243467786')
             usersReacted[message.author.id] = True
 
             def check(reaction, user):
+                print(user.id)
+                print(message.author.id)
+                print(message.author.id == user.id)
                 if(user.id == message.author.id):
+                    print("Here")
                     bot.remove_reaction(message, reaction.emoji, message.author)
                     return
                 e = str(reaction.emoji)
