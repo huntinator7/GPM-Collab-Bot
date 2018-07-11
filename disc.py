@@ -9,10 +9,10 @@ from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 
 api = Mobileclient()
-# api.login(cfg.hunter['username'], cfg.hunter['password'],
-#           Mobileclient.FROM_MAC_ADDRESS)
+api.login(cfg.hunter['username'], cfg.hunter['password'],
+          Mobileclient.FROM_MAC_ADDRESS)
 mm = Musicmanager()
-# mm.login()
+mm.login()
 bot = Bot(command_prefix='!')
 MUSICID = '306145575039008768'
 BANGERSID = '464450150027493377'
