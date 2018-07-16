@@ -99,7 +99,7 @@ async def on_message(message):
                 return
             else:
                 found = query_db("SELECT * FROM songs WHERE nid = %s", str(nid))
-                if found > 0:
+                if len(found) > 0:
                     who_rejected = query_db("SELECT user_id, is_up from song_user WHERE song_id = %s", str(nid))
                     user_result = ""
                     for result in who_rejected:
@@ -123,13 +123,12 @@ async def on_message(message):
             await remove_msg(1.0, message)
             await bot.add_reaction(voting, 'upvote:464532537243467786')
 
-            async def check(reaction, user):
+            def check(reaction, user):
                 print(user.id)
                 print(message.author.id)
                 print(message.author.id == user.id)
                 if user.id == message.author.id:
                     print("Here")
-                    await bot.remove_reaction(message, reaction.emoji, message.author)
                     return False
                 e = str(reaction.emoji)
                 if user.id not in users_reacted:
