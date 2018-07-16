@@ -100,8 +100,14 @@ async def on_message(message):
             else:
                 found = await query_db("SELECT * FROM songs WHERE nid = $s", nid)
                 if found > 0:
-                    msg = '{0} has already been added by {1}'.format(
-                        song_name, found[0]['user'])
+                    who_rejected = await query_db("SELECT user_id, is_up from song_user WHERE song_id = $s", nid)
+                    user_result = ""
+                    for result in who_rejected:
+                        if (found[0]['status'] == 'rejected' and not result['is_up']) or (
+                                found[0]['status'] == 'accepted' and result['is_up']):
+                            user_result += '{0} '.format(message.server.get_member(result['user_id']).nick)
+                    msg = '{0} has already been put to vote by {1}. It was {2} by {3}'.format(
+                        song_name, found[0]['user'], found[0]['status'], user_result)
                     already_added = await bot.send_message(message.channel, msg)
                     await remove_msg(10.0, already_added)
                     await remove_msg(1.0, message)
