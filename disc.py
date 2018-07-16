@@ -162,7 +162,7 @@ async def on_message(message):
                     num_agree_votes += 1
 
             if num_agree_votes / TOTAL_USERS > PERCENT_NECESSARY:
-                await query_db("UPDATE songs SET status = 'added' WHERE nid = $s", nid)
+                await query_db("UPDATE songs SET status = 'accepted' WHERE nid = $s", nid)
                 msg = '{0} has been approved. Adding to bangers {1}'.format(
                     song_name, BANGERSLINK)
                 api.add_songs_to_playlist(list_id, song_id)
@@ -188,7 +188,7 @@ async def query_db(sql, data):
     cursor = mydb.cursor()
     await cursor.execute(sql, data)
     await mydb.commit()
-    return cursor
+    return cursor.fetchall()
 
 
 bot.run(cfg.discord['key'])
