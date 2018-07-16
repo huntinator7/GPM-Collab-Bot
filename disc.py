@@ -5,11 +5,11 @@ import re
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
-import mysql.connector
+import pymysql
 
-mydb = mysql.connector.connect(
+mydb = pymysql.connect(
     host="localhost",
-    user="moosenserver",
+    user="root",
     passwd="raspberry",
     database="bangerbot"
 )
@@ -98,9 +98,9 @@ async def on_message(message):
                 await remove_msg(10.0, removed)
                 return
             else:
-                found = await query_db("SELECT * FROM songs WHERE nid = $s", nid)
+                found = await query_db("SELECT * FROM songs WHERE nid = %s", nid)
                 if found > 0:
-                    who_rejected = await query_db("SELECT user_id, is_up from song_user WHERE song_id = $s", nid)
+                    who_rejected = await query_db("SELECT user_id, is_up from song_user WHERE song_id = %s", nid)
                     user_result = ""
                     for result in who_rejected:
                         if (found[0]['status'] == 'rejected' and not result['is_up']) or (
@@ -118,8 +118,8 @@ async def on_message(message):
             voting = await bot.send_message(message.channel,
                                             '[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(
                                                 message.author.nick, song_name, link))
-            await query_db("INSERT INTO songs (name, nid, userid, status, up, down, link) values (%s, $s, $s, "
-                           "'pending', 1, 0, $s)", (song_name, nid, message.author.id, link))
+            await query_db("INSERT INTO songs (name, nid, userid, status, up, down, link) values (%s, %s, %s, "
+                           "'pending', 1, 0, %s)", (song_name, nid, message.author.id, link))
             await remove_msg(1.0, message)
             await bot.add_reaction(voting, 'upvote:464532537243467786')
 
@@ -137,10 +137,10 @@ async def on_message(message):
                         '<:upvote:464532537243467786>') else False
                     users_reacted[user.id] = vote_status
                     if vote_status:
-                        query_db("UPDATE songs SET up = up + 1 WHERE nid = $s", nid)
+                        query_db("UPDATE songs SET up = up + 1 WHERE nid = %s", nid)
                     else:
-                        query_db("UPDATE songs SET down = down + 1 WHERE nid = $s", nid)
-                    query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES ($s, $s, $s)",
+                        query_db("UPDATE songs SET down = down + 1 WHERE nid = %s", nid)
+                    query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
                              (user.id, nid, vote_status))
                     return e.startswith(('<:upvote:464532537243467786>', '<:downvote:464532598643752970>'))
 
@@ -162,7 +162,7 @@ async def on_message(message):
                     num_agree_votes += 1
 
             if num_agree_votes / TOTAL_USERS > PERCENT_NECESSARY:
-                await query_db("UPDATE songs SET status = 'accepted' WHERE nid = $s", nid)
+                await query_db("UPDATE songs SET status = 'accepted' WHERE nid = %s", nid)
                 msg = '{0} has been approved. Adding to bangers {1}'.format(
                     song_name, BANGERSLINK)
                 api.add_songs_to_playlist(list_id, song_id)
@@ -172,7 +172,7 @@ async def on_message(message):
             else:
                 approval = await bot.send_message(message.channel,
                                                   'Sorry, {0} did not receive enough upvotes'.format(song_name))
-                await query_db("UPDATE songs SET status = 'rejected' WHERE nid = $s", nid)
+                await query_db("UPDATE songs SET status = 'rejected' WHERE nid = %s", nid)
                 await remove_msg(1.0, voting)
                 await remove_msg(120.0, approval)
         else:
