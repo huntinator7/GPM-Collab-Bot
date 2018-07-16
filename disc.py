@@ -184,10 +184,10 @@ async def remove_msg(sec, msg_to_remove):
     await bot.delete_message(msg_to_remove)
 
 
-async def query_db(sql, data):
+def query_db(sql, data):
     cursor = mydb.cursor()
-    await cursor.execute(sql, data)
-    await mydb.commit()
+    cursor.execute(sql, data)
+    mydb.commit()
     return cursor.fetchall()
 
 
