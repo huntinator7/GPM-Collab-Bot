@@ -27,7 +27,7 @@ BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LH
 
 songfilename = ''
 
-TOTAL_USERS = 5
+TOTAL_USERS = 2
 PERCENT_NECESSARY = 0.81
 
 
@@ -127,7 +127,7 @@ async def on_message(message):
                 print(user.id)
                 print(message.author.id)
                 print(message.author.id == user.id)
-                if user.id == message.author.id:
+                if user.id == message.author.id or user == bot.user:
                     print("Here")
                     return False
                 e = str(reaction.emoji)
@@ -141,6 +141,7 @@ async def on_message(message):
                         query_db("UPDATE songs SET down = down + 1 WHERE nid = %s", str(nid))
                     query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
                              (user.id, str(nid), vote_status))
+                    print('{0} vote was added'.format(user.displayName))
                     return e.startswith(('<:upvote:464532537243467786>', '<:downvote:464532598643752970>'))
 
             while len(users_reacted) < TOTAL_USERS:
@@ -157,6 +158,7 @@ async def on_message(message):
             num_agree_votes = 0
 
             for vote_agree_status in users_reacted:
+                print(vote_agree_status)
                 if vote_agree_status:
                     num_agree_votes += 1
 
