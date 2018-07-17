@@ -27,7 +27,7 @@ BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LH
 
 songfilename = ''
 
-TOTAL_USERS = 2
+TOTAL_USERS = 5
 PERCENT_NECESSARY = 0.81
 
 
@@ -86,7 +86,6 @@ async def on_message(message):
                         for song in library:
                             if 'nid' in song:
                                 if song['nid'] == nid:
-                                    print(song)
                                     song_name = '{0} - {1}'.format(
                                         song['title'], song['artist'])
                                     song_id = song['id']
@@ -122,11 +121,10 @@ async def on_message(message):
                            "'pending', 1, 0, %s)", (song_name, str(nid), message.author.id, link))
             await remove_msg(1.0, message)
             await bot.add_reaction(voting, 'upvote:464532537243467786')
+            users_reacted['bot'] = True
 
             def check(reaction, user):
                 print(user.id)
-                print(message.author.id)
-                print(message.author.id == user.id)
                 if user.id == message.author.id or user == bot.user:
                     print("Here")
                     return False
@@ -158,8 +156,7 @@ async def on_message(message):
             num_agree_votes = 0
 
             for vote_agree_status in users_reacted:
-                print(vote_agree_status)
-                if vote_agree_status:
+                if users_reacted[vote_agree_status]:
                     num_agree_votes += 1
 
             if num_agree_votes / TOTAL_USERS > PERCENT_NECESSARY:
