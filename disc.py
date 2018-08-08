@@ -177,62 +177,48 @@ async def on_raw_reaction_add(obj):
         # Remove the voter's other vote
         # and update the message to reflect the change
         print("reactor has reacted")
-        print(message.raw_mentions)
-        print(reactor.id)
-        print(message.raw_mentions.index(reactor.id))
+        opp_emoji = UPVOTE if emoji.id == DOWNVOTE.id else DOWNVOTE
+        await message.remove_reaction(opp_emoji, reactor)
         loc = message.content.find(str(reactor.id))
         await message.edit(content='{0}{1}{2}'.format(message.content[:loc - 50],
                                                       re.sub(r'<.+>', str(emoji), message.content[loc - 50:loc]),
                                                       message.content[loc:]))
-        opp_emoji = UPVOTE if emoji.id == DOWNVOTE.id else DOWNVOTE
-        print(opp_emoji)
-        await message.remove_reaction(opp_emoji, reactor)
-        return
+        message = await channel.get_message(obj.message_id)
     elif reactor.id == bot.user.id:
         await message.edit(content='{0}\n{1} {2}'.format(message.content, emoji, proposer.mention))
     elif author.id == bot.user.id:
         await message.edit(content='{0}\n{1} {2}'.format(message.content, emoji, reactor.mention))
     # Action to take if there are enough votes on a message
-    tot_react = sum(x.count for x in message.reactions)
-    print(tot_react)
-    print(TOTAL_USERS)
-    if tot_react >= TOTAL_USERS:
-        nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
-        for r in message.reactions:
-            vote_status = True if r.emoji.id == UPVOTE.id else False
-            print(vote_status)
-            async for u in r.users():
-                print(u, r.emoji.name)
-                if not u.bot:
-                    print("INSERT INTO song_user ({0}, {1}, {2})".format(u.id, str(nid), vote_status))
-                    asyncio.ensure_future(
-                        query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
-                                 (u.id, str(nid), vote_status)))
+    tot_upvotes = sum(x.count for x in message.reactions if x.emoji.id == UPVOTE.id)
+    tot_downvotes = sum(x.count for x in message.reactions if x.emoji.id == DOWNVOTE.id)
+    print("up: " + str(tot_upvotes))
+    print("down: " + str(tot_downvotes))
 
-        num_agree_votes = next(x.count for x in message.reactions if x.emoji.id == UPVOTE.id)
-        print(num_agree_votes)
-        api.add_store_tracks(nid)
+    if tot_upvotes >= 4 or tot_downvotes >= 2:
+        nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
+        asyncio.ensure_future(add_song_users_to_db(message, nid))
         list_id, song_id, song_name = do_gpm(nid, "Bangers")
-        if num_agree_votes >= UPVOTES_NEEDED:
-            msg = '{0} has been approved. Adding to bangers {1}'.format(
-                song_name, BANGERSLINK)
+        if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
-            approval = await channel.send(msg)
+            approval = await channel.send('{0} has been approved. Adding to bangers {1}'.format(
+                song_name, BANGERSLINK))
             status = "accepted"
         else:
-            status = "rejected"
             approval = await channel.send('Sorry, {0} did not receive enough upvotes'.format(song_name))
+            status = "rejected"
         asyncio.ensure_future(
             query_db("UPDATE songs SET status = %s, up = %s, down = %s WHERE nid = %s",
-                     (status, num_agree_votes, TOTAL_USERS - num_agree_votes, str(nid))))
+                     (status, tot_upvotes, tot_downvotes, str(nid))))
         await message.delete()
-        asyncio.ensure_future(remove_msg(120.0, approval))
+        asyncio.ensure_future(remove_msg(3600.0, approval))
 
 
 def do_gpm(nid, name):
     print(nid)
+    print(name)
     lists = api.get_all_playlists()
     for l in lists:
+        print(l['name'])
         if l['name'] == name:
             library = api.get_all_songs()
             for song in library:
@@ -242,6 +228,19 @@ def do_gpm(nid, name):
                         return l['id'], song['id'], '{0} - {1}'.format(song['title'], song['artist'])
     print("did not find song")
     return
+
+
+async def add_song_users_to_db(message, nid):
+    for r in message.reactions:
+        vote_status = True if r.emoji.id == UPVOTE.id else False
+        print(vote_status)
+        async for u in r.users():
+            print(u, r.emoji.name)
+            if not u.bot:
+                print("INSERT INTO song_user ({0}, {1}, {2})".format(u.id, str(nid), vote_status))
+                asyncio.ensure_future(
+                    query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
+                             (u.id, str(nid), vote_status)))
 
 
 async def remove_msg(sec, msg_to_remove):
