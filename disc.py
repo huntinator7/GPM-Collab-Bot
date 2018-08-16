@@ -24,8 +24,8 @@ MUSICID = 306145575039008768
 BANGERSID = 466453653084176384
 GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw23ixBIZZ-ocHszlJRgcwZXv8Djcvvz_I6PtHs3e5xm8ZMNHdf00VQQ4wPPA%3D%3D'
-UPVOTE = 464532537243467786
-DOWNVOTE = 464532598643752970
+UPVOTE = None
+DOWNVOTE = None
 
 TOTAL_USERS = 5
 UPVOTES_NEEDED = 5
@@ -64,9 +64,8 @@ async def on_message(message):
         try:
             api.add_store_tracks(nid)
             await asyncio.sleep(3)
-            list_id, song_id, song_name = do_gpm(nid, "Moosen Mix")
+            list_id, song_id, song_name = do_gpm(nid, "Moosen Mix", True)
             print(list_id + song_id + song_name)
-            api.add_songs_to_playlist(list_id, song_id)
             msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
         except TypeError:
             print("Error with song")
@@ -88,7 +87,7 @@ async def on_message(message):
             '/m/') + 3:link.find('?t=')]
         api.add_store_tracks(nid)
         try:
-            list_id, song_id, song_name = do_gpm(nid, "Bangers")
+            list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
         except TypeError:
             print("Error with song")
             await message.delete()
@@ -194,8 +193,9 @@ async def on_raw_reaction_add(obj):
 
     if tot_upvotes >= 4 or tot_downvotes >= 2:
         nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
-        asyncio.ensure_future(add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes))
-        list_id, song_id, song_name = do_gpm(nid, "Bangers")
+        asyncio.ensure_future(
+            add_song_users_to_db(message, nid, True if tot_upvotes >= 4 else False, tot_upvotes, tot_downvotes))
+        list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
             approval = await channel.send('{0} has been approved. Adding to bangers {1}'.format(
@@ -209,7 +209,7 @@ async def on_raw_reaction_add(obj):
         asyncio.ensure_future(remove_msg(3600.0, approval))
 
 
-def do_gpm(nid, name):
+def do_gpm(nid, name, add):
     print(nid)
     print(name)
     lists = api.get_all_playlists()
@@ -221,6 +221,8 @@ def do_gpm(nid, name):
                 if 'nid' in song:
                     if song['nid'] == nid:
                         print(l['id'] + '\n' + song['id'] + '\n' + '{0} - {1}'.format(song['title'], song['artist']))
+                        if add:
+                            api.add_songs_to_playlist(l['id'], song['id'])
                         return l['id'], song['id'], '{0} - {1}'.format(song['title'], song['artist'])
     print("did not find song")
     return
@@ -261,6 +263,7 @@ async def query_db(sql, data):
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             mydb.commit()
+            await asyncio.sleep(1)
             return cursor.fetchall()
     finally:
         mydb.close()
