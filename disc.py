@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import asyncio
 import config as cfg
 import re
+import sys
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
@@ -10,7 +11,7 @@ import pymysql
 mydb = pymysql.connect(
     host="localhost",
     user="root",
-    # passwd="raspberry",
+    passwd="" if (len(sys.argv) > 1 and sys.argv[1] == 'd') else "raspberry",
     database="bangerbot"
 )
 
@@ -18,7 +19,7 @@ api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
           Mobileclient.FROM_MAC_ADDRESS)
 mm = Musicmanager()
-mm.perform_oauth()
+mm.login()
 bot = Bot(command_prefix='!')
 MUSICID = 306145575039008768
 BANGERSID = 466453653084176384
@@ -62,8 +63,6 @@ async def on_message(message):
         nid = content[content.find(
             '/m/') + 3:content.find('?t=')]
         try:
-            api.add_store_tracks(nid)
-            await asyncio.sleep(3)
             list_id, song_id, song_name = do_gpm(nid, "Moosen Mix", True)
             print(list_id + song_id + song_name)
             msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
@@ -193,8 +192,7 @@ async def on_raw_reaction_add(obj):
 
     if tot_upvotes >= 4 or tot_downvotes >= 2:
         nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
-        asyncio.ensure_future(
-            add_song_users_to_db(message, nid, True if tot_upvotes >= 4 else False, tot_upvotes, tot_downvotes))
+        await add_song_users_to_db(message, nid, True if tot_upvotes >= 4 else False, tot_upvotes, tot_downvotes)
         list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
@@ -212,6 +210,7 @@ async def on_raw_reaction_add(obj):
 def do_gpm(nid, name, add):
     print(nid)
     print(name)
+    api.add_store_tracks(nid)
     lists = api.get_all_playlists()
     for l in lists:
         print(l['name'])
@@ -236,9 +235,8 @@ async def add_song_users_to_db(message, nid, status, up, down):
             print(u, r.emoji.name)
             if not u.bot:
                 print("INSERT INTO song_user ({0}, {1}, {2})".format(u.id, str(nid), vote_status))
-                asyncio.ensure_future(
-                    query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
-                             (u.id, str(nid), vote_status)))
+                asyncio.ensure_future(query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
+                                               (u.id, str(nid), vote_status)))
     asyncio.ensure_future(
         query_db("UPDATE songs SET status = %s, up = %s, down = %s WHERE nid = %s",
                  (status, up, down, str(nid))))
