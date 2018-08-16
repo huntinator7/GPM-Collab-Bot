@@ -2,18 +2,26 @@ from __future__ import unicode_literals
 import asyncio
 import config as cfg
 import re
-import sys
 from gmusicapi import Mobileclient
 from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 import pymysql
 
-mydb = pymysql.connect(
-    host="localhost",
-    user="root",
-    passwd="" if (len(sys.argv) > 1 and sys.argv[1] == 'd') else "raspberry",
-    database="bangerbot"
-)
+if hasattr(cfg, 'db'):
+    print("HAS PASSWORD")
+    mydb = pymysql.connect(
+        host="localhost",
+        user="root",
+        passwd=cfg.db['pass'],
+        database="bangerbot"
+    )
+else:
+    print("DOES NOT HAVE PASSWD")
+    mydb = pymysql.connect(
+        host="localhost",
+        user="root",
+        database="bangerbot"
+    )
 
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
