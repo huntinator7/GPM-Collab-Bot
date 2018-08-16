@@ -27,8 +27,6 @@ BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LH
 UPVOTE = 464532537243467786
 DOWNVOTE = 464532598643752970
 
-songfilename = ''
-
 TOTAL_USERS = 5
 UPVOTES_NEEDED = 5
 
@@ -63,24 +61,29 @@ async def on_message(message):
     if channel.id == MUSICID and content.startswith('!add') or content.startswith('!ad'):
         nid = content[content.find(
             '/m/') + 3:content.find('?t=')]
-        msg = 'Could not add song'
-        api.add_store_tracks(nid)
         try:
+            api.add_store_tracks(nid)
+            await asyncio.sleep(3)
             list_id, song_id, song_name = do_gpm(nid, "Moosen Mix")
+            print(list_id + song_id + song_name)
             api.add_songs_to_playlist(list_id, song_id)
             msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
         except TypeError:
             print("Error with song")
+            msg = 'Could not add song'
         await channel.send(msg)
     elif channel.id == BANGERSID:
         if not content.startswith('<:banger:462298646117875734>'):
             await message.delete()
             return
-        link = re.match('http\S+', content[29:])
-        if not link:
-            link = 'ERROR'
-        else:
-            link = link.group(0)
+        try:
+            link = re.search('http\S+', content[29:])[0]
+        except TypeError:
+            print("Song is not valid")
+            await message.delete()
+            removed = await channel.send('{0} was not recognized as a proper link to a song'.format(content[29:]))
+            asyncio.ensure_future(remove_msg(10.0, removed))
+            return
         nid = link[link.find(
             '/m/') + 3:link.find('?t=')]
         api.add_store_tracks(nid)
@@ -89,11 +92,6 @@ async def on_message(message):
         except TypeError:
             print("Error with song")
             await message.delete()
-            return
-        if not song_name:
-            await message.delete()
-            removed = await channel.send('{0} was not recognized as a proper link to a song'.format(link))
-            asyncio.ensure_future(remove_msg(10.0, removed))
             return
         found = await query_db("SELECT status, userid FROM songs WHERE nid = %s", str(nid))
         if len(found) > 0:
@@ -196,7 +194,7 @@ async def on_raw_reaction_add(obj):
 
     if tot_upvotes >= 4 or tot_downvotes >= 2:
         nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
-        asyncio.ensure_future(add_song_users_to_db(message, nid))
+        asyncio.ensure_future(add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes))
         list_id, song_id, song_name = do_gpm(nid, "Bangers")
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
@@ -206,9 +204,7 @@ async def on_raw_reaction_add(obj):
         else:
             approval = await channel.send('Sorry, {0} did not receive enough upvotes'.format(song_name))
             status = "rejected"
-        asyncio.ensure_future(
-            query_db("UPDATE songs SET status = %s, up = %s, down = %s WHERE nid = %s",
-                     (status, tot_upvotes, tot_downvotes, str(nid))))
+        asyncio.ensure_future(add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes))
         await message.delete()
         asyncio.ensure_future(remove_msg(3600.0, approval))
 
@@ -230,7 +226,7 @@ def do_gpm(nid, name):
     return
 
 
-async def add_song_users_to_db(message, nid):
+async def add_song_users_to_db(message, nid, status, up, down):
     for r in message.reactions:
         vote_status = True if r.emoji.id == UPVOTE.id else False
         print(vote_status)
@@ -241,6 +237,9 @@ async def add_song_users_to_db(message, nid):
                 asyncio.ensure_future(
                     query_db("INSERT INTO song_user (user_id, song_id, is_up) VALUES (%s, %s, %s)",
                              (u.id, str(nid), vote_status)))
+    asyncio.ensure_future(
+        query_db("UPDATE songs SET status = %s, up = %s, down = %s WHERE nid = %s",
+                 (status, up, down, str(nid))))
 
 
 async def remove_msg(sec, msg_to_remove):
@@ -255,10 +254,16 @@ async def send_and_remove(msg, channel, sec):
 
 
 async def query_db(sql, data):
-    cursor = mydb.cursor()
-    cursor.execute(sql, data)
-    mydb.commit()
-    return cursor.fetchall()
+    try:
+        with mydb.cursor() as cursor:
+            # Create a new record
+            cursor.execute(sql, data)
+            # connection is not autocommit by default. So you must commit to save
+            # your changes.
+            mydb.commit()
+            return cursor.fetchall()
+    finally:
+        mydb.close()
 
 
 bot.run(cfg.discord['key'])
