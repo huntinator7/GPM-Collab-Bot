@@ -74,9 +74,9 @@ async def on_message(message):
         try:
             nid = msg_arr[1][msg_arr[1].find(
                 '/m/') + 3:msg_arr[1].find('?t=')]
-            list_id, song_id, song_name = do_gpm(nid, msg_arr[2], True)
+            list_id, song_id, song_name = do_gpm(nid, "Moosen_Mix", True)
             print(list_id + song_id + song_name)
-            msg = 'Successfully added song to {0}! {1}'.format(msg_arr[2], GPMLINK)
+            msg = 'Successfully added song to {0}! {1}'.format("Moosen_Mix", GPMLINK)
         except TypeError:
             print("Error with song")
             msg = 'Could not add song'
