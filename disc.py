@@ -265,8 +265,8 @@ async def send_and_remove(msg, channel, sec):
 
 
 async def query_db(sql, data):
-    try:
-        with mydb.cursor() as cursor:
+    with mydb.cursor() as cursor:
+        try:
             # Create a new record
             cursor.execute(sql, data)
             # connection is not autocommit by default. So you must commit to save
@@ -274,8 +274,7 @@ async def query_db(sql, data):
             mydb.commit()
             await asyncio.sleep(1)
             return cursor.fetchall()
-    finally:
-        mydb.close()
-
+        finally:
+            cursor.close()
 
 bot.run(cfg.discord['key'])
