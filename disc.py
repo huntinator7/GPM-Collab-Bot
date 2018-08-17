@@ -213,7 +213,8 @@ async def on_raw_reaction_add(obj):
         else:
             approval = await channel.send('Sorry, {0} did not receive enough upvotes'.format(song_name))
             status = "rejected"
-        asyncio.ensure_future(add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes))
+        print(message, nid, status, tot_upvotes, tot_downvotes)
+        await add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes)
         await message.delete()
         asyncio.ensure_future(remove_msg(3600.0, approval))
 
