@@ -67,13 +67,16 @@ async def on_message(message):
     content = message.content
     if author == bot.user:
         return
-    if channel.id == MUSICID and content.startswith('!add') or content.startswith('!ad'):
-        nid = content[content.find(
-            '/m/') + 3:content.find('?t=')]
+    if channel.id == MUSICID:
+        msg_arr = content.split()
+        if not (msg_arr[0] == '!add' or msg_arr[0] == '!ad'):
+            return
         try:
-            list_id, song_id, song_name = do_gpm(nid, "Moosen Mix", True)
+            nid = msg_arr[1][msg_arr[1].find(
+                '/m/') + 3:msg_arr[1].find('?t=')]
+            list_id, song_id, song_name = do_gpm(nid, msg_arr[2], True)
             print(list_id + song_id + song_name)
-            msg = 'Successfully added song to Moosen Mix! ' + GPMLINK
+            msg = 'Successfully added song to {0}! {1}'.format(msg_arr[2], GPMLINK)
         except TypeError:
             print("Error with song")
             msg = 'Could not add song'
