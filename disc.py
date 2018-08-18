@@ -7,22 +7,6 @@ from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 import pymysql
 
-if hasattr(cfg, 'db'):
-    print("HAS PASSWORD")
-    mydb = pymysql.connect(
-        host="localhost",
-        user="root",
-        passwd=cfg.db['pass'],
-        database="bangerbot"
-    )
-else:
-    print("DOES NOT HAVE PASSWD")
-    mydb = pymysql.connect(
-        host="localhost",
-        user="root",
-        database="bangerbot"
-    )
-
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
           Mobileclient.FROM_MAC_ADDRESS)
@@ -265,17 +249,53 @@ async def send_and_remove(msg, channel, sec):
     await message.delete()
 
 
+def restart_server():
+    global my_db
+    if my_db:
+        my_db.close()
+    if hasattr(cfg, 'db'):
+        print("HAS PASSWORD")
+        my_db = pymysql.connect(
+            host="localhost",
+            user="root",
+            passwd=cfg.db['pass'],
+            database="bangerbot"
+        )
+    else:
+        print("DOES NOT HAVE PASSWORD")
+        my_db = pymysql.connect(
+            host="localhost",
+            user="root",
+            database="bangerbot"
+        )
+
+
 async def query_db(sql, data):
-    with mydb.cursor() as cursor:
+    with my_db.cursor() as cursor:
         try:
             # Create a new record
             cursor.execute(sql, data)
             # connection is not autocommit by default. So you must commit to save
             # your changes.
-            mydb.commit()
+            my_db.commit()
             await asyncio.sleep(1)
             return cursor.fetchall()
+        except BrokenPipeError:
+            print("BrokenPipeError")
+            restart_server()
+            asyncio.ensure_future(query_db(sql, data))
+        except TimeoutError:
+            print("TimeoutError")
+            restart_server()
+            asyncio.ensure_future(query_db(sql, data))
+        except pymysql.err.OperationalError:
+            print("pymysql.err.OperationalError")
+            restart_server()
+            asyncio.ensure_future(query_db(sql, data))
         finally:
             cursor.close()
+
+
+restart_server()
 
 bot.run(cfg.discord['key'])
