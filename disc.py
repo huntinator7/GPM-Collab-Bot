@@ -7,7 +7,7 @@ from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 import pymysql
 
-my_db = pymysql.connect()
+my_db = None
 
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
