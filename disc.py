@@ -7,7 +7,7 @@ from gmusicapi import Musicmanager
 from discord.ext.commands import Bot
 import pymysql
 
-my_db = ""
+my_db = pymysql.connect()
 
 api = Mobileclient()
 api.login(cfg.hunter['username'], cfg.hunter['password'],
@@ -15,10 +15,12 @@ api.login(cfg.hunter['username'], cfg.hunter['password'],
 mm = Musicmanager()
 mm.login()
 bot = Bot(command_prefix='!')
-MUSICID = 306145575039008768
-BANGERSID = 466453653084176384
-GPMLINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyOGhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
-BANGERSLINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw23ixBIZZ-ocHszlJRgcwZXv8Djcvvz_I6PtHs3e5xm8ZMNHdf00VQQ4wPPA%3D%3D'
+MUSIC_ID = 306145575039008768
+BANGERS_ID = 466453653084176384
+GPM_LINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyO' \
+           'GhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
+BANGERS_LINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw2' \
+               '3ixBIZZ-ocHszlJRgcwZXv8Djcvvz_I6PtHs3e5xm8ZMNHdf00VQQ4wPPA%3D%3D'
 UPVOTE = None
 DOWNVOTE = None
 
@@ -53,7 +55,7 @@ async def on_message(message):
     content = message.content
     if author == bot.user:
         return
-    if channel.id == MUSICID:
+    if channel.id == MUSIC_ID:
         msg_arr = content.split()
         if not (msg_arr[0] == '!add' or msg_arr[0] == '!ad'):
             return
@@ -62,12 +64,12 @@ async def on_message(message):
                 '/m/') + 3:msg_arr[1].find('?t=')]
             list_id, song_id, song_name = do_gpm(nid, "Moosen_Mix", True)
             print(list_id + song_id + song_name)
-            msg = 'Successfully added song to {0}! {1}'.format("Moosen_Mix", GPMLINK)
+            msg = 'Successfully added song to {0}! {1}'.format("Moosen_Mix", GPM_LINK)
         except TypeError:
             print("Error with song")
             msg = 'Could not add song'
         await channel.send(msg)
-    elif channel.id == BANGERSID:
+    elif channel.id == BANGERS_ID:
         if not content.startswith('<:banger:462298646117875734>'):
             await message.delete()
             return
@@ -88,7 +90,7 @@ async def on_message(message):
             print("Error with song")
             await message.delete()
             return
-        found = await query_db("SELECT status, userid FROM songs WHERE nid = %s", str(nid))
+        found = await query_db("SELECT status, user_id FROM songs WHERE nid = %s", str(nid))
         if len(found) > 0:
             who_rejected = await query_db("SELECT user_id, is_up from song_user WHERE song_id = %s", str(nid))
             user_result = ""
@@ -104,7 +106,7 @@ async def on_message(message):
             return
         voting = await channel.send('[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(
             author.mention, song_name, link))
-        asyncio.ensure_future(query_db("INSERT INTO songs (name, nid, userid, status, up, down, link) values (%s, %s, "
+        asyncio.ensure_future(query_db("INSERT INTO songs (name, nid, user_id, status, up, down, link) values (%s, %s, "
                                        "%s, 'pending', 1, 0, %s)", (song_name, str(nid), author.id, link)))
         await message.delete()
         await asyncio.sleep(1)
@@ -113,14 +115,14 @@ async def on_message(message):
 
 @bot.event
 async def on_raw_reaction_remove(obj):
-    emoji = obj.emoji
+    # emoji = obj.emoji
     channel = bot.get_channel(obj.channel_id)
-    message = await channel.get_message(obj.message_id)
-    author = message.author
-    guild = bot.get_guild(obj.guild_id)
+    # message = await channel.get_message(obj.message_id)
+    # author = message.author
+    # guild = bot.get_guild(obj.guild_id)
     reactor = bot.get_user(obj.user_id)
     # Exit if not in bangers or it was the bot's reaction
-    if channel.id != BANGERSID:
+    if channel.id != BANGERS_ID:
         return
     if not reactor.bot:
         print("orrr action")
@@ -142,11 +144,11 @@ async def on_raw_reaction_add(obj):
     channel = bot.get_channel(obj.channel_id)
     message = await channel.get_message(obj.message_id)
     author = message.author
-    guild = bot.get_guild(obj.guild_id)
+    # guild = bot.get_guild(obj.guild_id)
     reactor = bot.get_user(obj.user_id)
 
     # Exit if not in bangers or it was the bot's reaction
-    if channel.id != BANGERSID or len(message.raw_mentions) < 1:
+    if channel.id != BANGERS_ID or len(message.raw_mentions) < 1:
         print("wrong channel")
         return
     # Define vote proposer
@@ -194,7 +196,7 @@ async def on_raw_reaction_add(obj):
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
             approval = await channel.send('{0} has been approved. Adding to bangers {1}'.format(
-                song_name, BANGERSLINK))
+                song_name, BANGERS_LINK))
             status = "accepted"
         else:
             approval = await channel.send('Sorry, {0} did not receive enough upvotes'.format(song_name))
