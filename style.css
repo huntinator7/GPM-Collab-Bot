@@ -1,0 +1,9 @@
+body {
+  font: 100% Helvetica, sans-serif;
+  color: #444;
+  background-color: #333 !important;
+}
+
+#root {
+  background-color: #333 !important;
+}
