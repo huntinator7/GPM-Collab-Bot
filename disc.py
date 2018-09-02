@@ -17,6 +17,7 @@ mm.login()
 bot = Bot(command_prefix='!')
 MUSIC_ID = 306145575039008768
 BANGERS_ID = 466453653084176384
+INFOID = 485684606377394178
 GPM_LINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyO' \
            'GhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 BANGERS_LINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw2' \
@@ -78,8 +79,7 @@ async def on_message(message):
         except TypeError:
             print("Song is not valid")
             await message.delete()
-            removed = await channel.send('{0} was not recognized as a proper link to a song'.format(content[29:]))
-            asyncio.ensure_future(remove_msg(10.0, removed))
+            await guild.get_channel(INFOID).send('{0} was not recognized as a proper link to a song'.format(content[29:]))
             return
         nid = link[link.find(
             '/m/') + 3:link.find('?t=')]
@@ -100,8 +100,7 @@ async def on_message(message):
                     user_result += '{0} '.format(guild.get_member(int(result[0])).nick)
             msg = '{0} has already been put to vote by {1}. It was {2} by {3}'.format(
                 song_name, guild.get_member(int(found[0][1])).nick, found[0][0], user_result)
-            already_added = await channel.send(msg)
-            asyncio.ensure_future(remove_msg(30.0, already_added))
+            await guild.get_channel(INFOID).send(msg)
             await message.delete()
             return
         voting = await channel.send('[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(
@@ -144,7 +143,7 @@ async def on_raw_reaction_add(obj):
     channel = bot.get_channel(obj.channel_id)
     message = await channel.get_message(obj.message_id)
     author = message.author
-    # guild = bot.get_guild(obj.guild_id)
+    guild = bot.get_guild(obj.guild_id)
     reactor = bot.get_user(obj.user_id)
 
     # Exit if not in bangers or it was the bot's reaction
@@ -191,20 +190,16 @@ async def on_raw_reaction_add(obj):
 
     if tot_upvotes >= 4 or tot_downvotes >= 2:
         nid = message.content[message.content.find('/m/') + 3:message.content.find('?t=')]
-        await add_song_users_to_db(message, nid, True if tot_upvotes >= 4 else False, tot_upvotes, tot_downvotes)
+        await add_song_users_to_db(message.reactions, nid, True if tot_upvotes >= 4 else False, tot_upvotes,
+                                   tot_downvotes)
         list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
-            approval = await channel.send('{0} has been approved. Adding to bangers {1}'.format(
+            await guild.get_channel(INFOID).send('{0} has been approved. Adding to bangers {1}'.format(
                 song_name, BANGERS_LINK))
-            status = "accepted"
         else:
-            approval = await channel.send('Sorry, {0} did not receive enough upvotes'.format(song_name))
-            status = "rejected"
-        print(message, nid, status, tot_upvotes, tot_downvotes)
-        await add_song_users_to_db(message, nid, status, tot_upvotes, tot_downvotes)
+            await guild.get_channel(INFOID).send('Sorry, {0} did not receive enough upvotes'.format(song_name))
         await message.delete()
-        asyncio.ensure_future(remove_msg(3600.0, approval))
 
 
 def do_gpm(nid, name, add):
@@ -227,8 +222,8 @@ def do_gpm(nid, name, add):
     return
 
 
-async def add_song_users_to_db(message, nid, status, up, down):
-    for r in message.reactions:
+async def add_song_users_to_db(reactions, nid, status, up, down):
+    for r in reactions:
         vote_status = True if r.emoji.id == UPVOTE.id else False
         print(vote_status)
         async for u in r.users():
