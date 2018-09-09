@@ -17,7 +17,8 @@ mm.login()
 bot = Bot(command_prefix='!')
 MUSIC_ID = 306145575039008768
 BANGERS_ID = 466453653084176384
-INFOID = 485684606377394178
+INFO_ID = 485684606377394178
+TRIAL_ID = 'ea5a6167-3148-4ad2-a514-fdeb57b53fcc'
 GPM_LINK = 'https://play.google.com/music/playlist/AMaBXylMI584mSlTif8d40WcRKSHpna8NHbGStz6WmyO' \
            'GhiL9FqeSAVycCSqntQCyj21PZjlKt4q2otp_2JDjEKuLyVljZ9UCw%3D%3D'
 BANGERS_LINK = 'https://play.google.com/music/playlist/AMaBXyn12klQIhyshDRuKbr1LHE61-P7FMr5ucw2' \
@@ -79,7 +80,8 @@ async def on_message(message):
         except TypeError:
             print("Song is not valid")
             await message.delete()
-            await guild.get_channel(INFOID).send('{0} was not recognized as a proper link to a song'.format(content[29:]))
+            await guild.get_channel(INFO_ID).send(
+                '{0} was not recognized as a proper link to a song'.format(content[29:]))
             return
         nid = link[link.find(
             '/m/') + 3:link.find('?t=')]
@@ -100,16 +102,48 @@ async def on_message(message):
                     user_result += '{0} '.format(guild.get_member(int(result[0])).nick)
             msg = '{0} has already been put to vote by {1}. It was {2} by {3}'.format(
                 song_name, guild.get_member(int(found[0][1])).nick, found[0][0], user_result)
-            await guild.get_channel(INFOID).send(msg)
+            await guild.get_channel(INFO_ID).send(msg)
             await message.delete()
             return
         voting = await channel.send('[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(
             author.mention, song_name, link))
-        asyncio.ensure_future(query_db("INSERT INTO songs (name, nid, user_id, status, up, down, link) values (%s, %s, "
-                                       "%s, 'pending', 1, 0, %s)", (song_name, str(nid), author.id, link)))
+        asyncio.ensure_future(
+            query_db("INSERT INTO songs (name, nid, user_id, status, up, down, link, song_id) values (%s, %s, "
+                     "%s, 'pending', 1, 0, %s, %s)", (song_name, str(nid), author.id, link, song_id)))
+        do_gpm(nid, "Bangers_trial", True)
         await message.delete()
         await asyncio.sleep(1)
         await voting.add_reaction(UPVOTE)
+    elif channel.id == 319938734135050240:
+        if content.startswith('getid'):
+            nid = content.split()[1]
+            print(nid)
+            list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
+            await channel.send(song_id + ' ' + list_id)
+        elif content.startswith('getall'):
+            print(api.get_all_user_playlist_contents())
+        elif content.startswith('trial'):
+            nid = content.split()[1]
+            list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", True)
+            await channel.send(song_id + ' ' + list_id + ' ' + song_name)
+        elif content.startswith('rem'):
+            temp_id = content.split()[1]
+            test = api.remove_entries_from_playlist(temp_id)
+            await channel.send(test)
+        elif content.startswith('trackid'):
+            nid = content.split()[1]
+            list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", False)
+            print(song_id, list_id)
+            test = api.get_all_user_playlist_contents()
+            for key in test:
+                print(key['id'], list_id, key['id'] == list_id)
+                if key['id'] == list_id:
+                    for song in key['tracks']:
+                        print(song['trackId'])
+                        if song['trackId'] == song_id:
+                            print(song['id'], song['trackId'])
+                            test = api.remove_entries_from_playlist(song['id'])
+                            await channel.send(test)
 
 
 @bot.event
@@ -193,12 +227,22 @@ async def on_raw_reaction_add(obj):
         await add_song_users_to_db(message.reactions, nid, True if tot_upvotes >= 4 else False, tot_upvotes,
                                    tot_downvotes)
         list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
+        test = api.get_all_user_playlist_contents()
+        for key in test:
+            print(key['id'], list_id, key['id'] == list_id)
+            if key['id'] == list_id:
+                for song in key['tracks']:
+                    print(song['trackId'])
+                    if song['trackId'] == song_id:
+                        print(song['id'], song['trackId'])
+                        song_was_removed = api.remove_entries_from_playlist(song['id'])
+                        print(song_was_removed)
         if tot_upvotes >= 4:
             api.add_songs_to_playlist(list_id, song_id)
-            await guild.get_channel(INFOID).send('{0} has been approved. Adding to bangers {1}'.format(
+            await guild.get_channel(INFO_ID).send('{0} has been approved. Adding to bangers {1}'.format(
                 song_name, BANGERS_LINK))
         else:
-            await guild.get_channel(INFOID).send('Sorry, {0} did not receive enough upvotes'.format(song_name))
+            await guild.get_channel(INFO_ID).send('Sorry, {0} did not receive enough upvotes'.format(song_name))
         await message.delete()
 
 
@@ -208,13 +252,13 @@ def do_gpm(nid, name, add):
     api.add_store_tracks(nid)
     lists = api.get_all_playlists()
     for l in lists:
-        print(l['name'])
         if l['name'] == name:
             library = api.get_all_songs()
             for song in library:
                 if 'nid' in song:
                     if song['nid'] == nid:
                         print(l['id'] + '\n' + song['id'] + '\n' + '{0} - {1}'.format(song['title'], song['artist']))
+                        # print(song)
                         if add:
                             api.add_songs_to_playlist(l['id'], song['id'])
                         return l['id'], song['id'], '{0} - {1}'.format(song['title'], song['artist'])
@@ -248,7 +292,7 @@ async def send_and_remove(msg, channel, sec):
     await message.delete()
 
 
-def restart_server():
+async def restart_server():
     global my_db
     if my_db:
         my_db.close()
@@ -281,20 +325,20 @@ async def query_db(sql, data):
             return cursor.fetchall()
         except BrokenPipeError:
             print("BrokenPipeError")
-            restart_server()
-            asyncio.ensure_future(query_db(sql, data))
+            await restart_server()
+            return query_db(sql, data)
         except TimeoutError:
             print("TimeoutError")
-            restart_server()
-            asyncio.ensure_future(query_db(sql, data))
+            await restart_server()
+            return query_db(sql, data)
         except pymysql.err.OperationalError:
             print("pymysql.err.OperationalError")
-            restart_server()
-            asyncio.ensure_future(query_db(sql, data))
+            await restart_server()
+            return query_db(sql, data)
         finally:
             cursor.close()
 
 
-restart_server()
+asyncio.ensure_future(restart_server())
 
 bot.run(cfg.discord['key'])
