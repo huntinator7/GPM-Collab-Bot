@@ -108,8 +108,8 @@ async def on_message(message):
         voting = await channel.send('[VOTE] {0} has voted to add {1} to the Bangers playlist\n<{2}>'.format(
             author.mention, song_name, link))
         asyncio.ensure_future(
-            query_db("INSERT INTO songs (name, nid, user_id, status, up, down, link, song_id) values (%s, %s, "
-                     "%s, 'pending', 1, 0, %s, %s)", (song_name, str(nid), author.id, link, song_id)))
+            query_db("INSERT INTO songs (name, nid, user_id, status, up, down, link) values (%s, %s, "
+                     "%s, 'pending', 1, 0, %s, %s)", (song_name, str(nid), author.id, link)))
         do_gpm(nid, "Bangers_trial", True)
         await message.delete()
         await asyncio.sleep(1)
