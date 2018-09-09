@@ -230,9 +230,8 @@ async def on_raw_reaction_add(obj):
         test = api.get_all_user_playlist_contents()
         for key in test:
             print(key['id'], list_id, key['id'] == list_id)
-            if key['id'] == list_id:
+            if key['id'] == 'ea5a6167-3148-4ad2-a514-fdeb57b53fcc':
                 for song in key['tracks']:
-                    print(song['trackId'])
                     if song['trackId'] == song_id:
                         print(song['id'], song['trackId'])
                         song_was_removed = api.remove_entries_from_playlist(song['id'])
