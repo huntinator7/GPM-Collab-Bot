@@ -114,36 +114,36 @@ async def on_message(message):
         await message.delete()
         await asyncio.sleep(1)
         await voting.add_reaction(UPVOTE)
-    elif channel.id == 319938734135050240:
-        if content.startswith('getid'):
-            nid = content.split()[1]
-            print(nid)
-            list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
-            await channel.send(song_id + ' ' + list_id)
-        elif content.startswith('getall'):
-            print(api.get_all_user_playlist_contents())
-        elif content.startswith('trial'):
-            nid = content.split()[1]
-            list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", True)
-            await channel.send(song_id + ' ' + list_id + ' ' + song_name)
-        elif content.startswith('rem'):
-            temp_id = content.split()[1]
-            test = api.remove_entries_from_playlist(temp_id)
-            await channel.send(test)
-        elif content.startswith('trackid'):
-            nid = content.split()[1]
-            list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", False)
-            print(song_id, list_id)
-            test = api.get_all_user_playlist_contents()
-            for key in test:
-                print(key['id'], list_id, key['id'] == list_id)
-                if key['id'] == list_id:
-                    for song in key['tracks']:
-                        print(song['trackId'])
-                        if song['trackId'] == song_id:
-                            print(song['id'], song['trackId'])
-                            test = api.remove_entries_from_playlist(song['id'])
-                            await channel.send(test)
+    # elif channel.id == 319938734135050240:
+    #     if content.startswith('getid'):
+    #         nid = content.split()[1]
+    #         print(nid)
+    #         list_id, song_id, song_name = do_gpm(nid, "Bangers", False)
+    #         await channel.send(song_id + ' ' + list_id)
+    #     elif content.startswith('getall'):
+    #         print(api.get_all_user_playlist_contents())
+    #     elif content.startswith('trial'):
+    #         nid = content.split()[1]
+    #         list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", True)
+    #         await channel.send(song_id + ' ' + list_id + ' ' + song_name)
+    #     elif content.startswith('rem'):
+    #         temp_id = content.split()[1]
+    #         test = api.remove_entries_from_playlist(temp_id)
+    #         await channel.send(test)
+    #     elif content.startswith('trackid'):
+    #         nid = content.split()[1]
+    #         list_id, song_id, song_name = do_gpm(nid, "Bangers_trial", False)
+    #         print(song_id, list_id)
+    #         test = api.get_all_user_playlist_contents()
+    #         for key in test:
+    #             print(key['id'], list_id, key['id'] == list_id)
+    #             if key['id'] == list_id:
+    #                 for song in key['tracks']:
+    #                     print(song['trackId'])
+    #                     if song['trackId'] == song_id:
+    #                         print(song['id'], song['trackId'])
+    #                         test = api.remove_entries_from_playlist(song['id'])
+    #                         await channel.send(test)
 
 
 @bot.event
